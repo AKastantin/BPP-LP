@@ -29,11 +29,18 @@ export default function Header() {
           
           <nav className="hidden md:flex items-center space-x-6">
             <button 
-              onClick={() => scrollToSection('solutions')}
+              onClick={() => scrollToSection('data-methodology')}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-solutions"
+              data-testid="nav-methodology"
             >
-              Solutions
+              Our Data
+            </button>
+            <button 
+              onClick={() => scrollToSection('interactive-tools')}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="nav-tools"
+            >
+              Try Tools
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
@@ -43,18 +50,11 @@ export default function Header() {
               Pricing
             </button>
             <button 
-              onClick={() => scrollToSection('case-studies')}
+              onClick={() => scrollToSection('contact')}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-case-studies"
+              data-testid="nav-contact"
             >
-              Case Studies
-            </button>
-            <button 
-              onClick={() => scrollToSection('resources')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-resources"
-            >
-              Resources
+              Contact
             </button>
           </nav>
         </div>

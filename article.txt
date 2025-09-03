@@ -1,0 +1,74 @@
+Hi, I organized comments by ‘tiles’ which, mostly refer to sections / tiles on the website that are already there. 
+
+ 
+
+Header (new):  
+
+‘A property is a place to live but also an investment for many people.  Often it is their biggest investment.  Is my property a good or a bad investment?  Is it a better investment than putting money in a savings account (or into stocks, or into bonds)?  We want to help property owners (and those aspiring to own) answer these questions.  We do this using ‘big’ data, modern statistical models, and lots of computation.  
+
+See how we do this [link to ‘where the numbers come from’, below].   
+
+Get an instant estimate of how much a specific property will be worth in 1, 3 or 5 years [link to forecast box below].   
+
+Tell us if you want to receive updates on a specific property by email [link to survey question, below].   
+
+ 
+New tile:  ‘Where do the numbers come from?’ 
+
+We use different data sources to uncover which properties are good and bad investments.  One is residential property transactions data published by the Land Registry.  Others include census data for small geographic areas as published by the Office of National statistics, and price inflation data as published by the Bank of England.  All data are used under the Open Government License v3.0 arrangement where required.   
+
+We create statistical models with the data that let us predict the current value of individual properties.  We create models that estimate past appreciation rates, and which forecast future appreciation rates.  Machine learning models are part of our toolbox.  The quality of a machine learning model, like any statistical estimate, depends on a lot of small, human decisions related to data selection, data cleaning, variable construction, model fitting, model estimation, and results interpretation.   
+
+The best models in the residential property work tend to use local data to make predictions about local property market changes.  We do this, and it is why we can produce property market reports for specific local areas (like Redditch and Bromesgrove).  If you would like to know more about how we do this, get in touch [link to contact form] 
+
+ 
+
+ 
+
+ ‘Property Value Forecast’ tile:   
+
+No need for visitor to enter property type or bedrooms.  That creates friction and we have most of the info for specific properties anyway. 
+
+Idea: 
+
+We give them the forecast without them giving us any data. 
+
+But if they want the forecast emailed to them, they provide first name, surname, and email address.  
+
+That way, they only give us their email address for a purpose.  This is the FIRST attempt to get email. 
+
+ 
+
+ 
+
+‘Property Owner Assessment’ tile 
+
+Let’s title this something like  
+‘Tell us if you want to receive updates on a specific property’ 
+Then the survey question can read: 
+‘Do you want to receive periodic emails with any of this info? (Tick as many as you like; opt out when you wish):  
+
+Market activity updates my postal district (as in the Redditch Standard)  
+
+Estimates of the current value of my property  
+
+Estimates of the future value of my property in 1, 3, and 5 years (forecast)  
+
+Comparison between the appreciation rate of my property and the appreciation rate of money held in a savings account, stocks and/or bonds 
+
+Something else [field for entering free text] 
+
+Tick boxes for each.  
+
+Then if they tick at least one box, a capture form appears below (first name, surname, email). 
+
+That way, we only take their email if they want to receive info.  This is the SECOND attempt to get email. 
+
+ 
+
+ 
+New tile: ‘Something else?’ (contact us) 
+
+Basic contact form with free text entry and fields for first name, surname, and email [THIRD chance to capture visitor email] 
+
+ 

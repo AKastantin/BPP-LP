@@ -1,5 +1,5 @@
 import PropertyForecastForm from "@/components/ui/property-forecast-form";
-import SurveyForm from "@/components/ui/survey-form";
+import PropertyUpdatesSurvey from "@/components/ui/property-updates-survey";
 import { BarChart3, ClipboardList } from "lucide-react";
 
 export default function InteractiveTools() {
@@ -22,7 +22,7 @@ export default function InteractiveTools() {
                 <BarChart3 className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Property Value Forecast</h3>
-              <p className="text-muted-foreground">Get an instant AI-powered valuation and 5-year forecast for any UK property</p>
+              <p className="text-muted-foreground">Get an instant estimate of how much a specific property will be worth in 1, 3 or 5 years</p>
             </div>
             
             <PropertyForecastForm />
@@ -33,11 +33,11 @@ export default function InteractiveTools() {
               <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <ClipboardList className="w-8 h-8 text-accent" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Property Owner Assessment</h3>
-              <p className="text-muted-foreground">Answer a few questions to get personalized property insights and selling recommendations</p>
+              <h3 className="text-2xl font-bold mb-2">Property Update Preferences</h3>
+              <p className="text-muted-foreground">Tell us if you want to receive updates on a specific property by email</p>
             </div>
             
-            <SurveyForm />
+            <PropertyUpdatesSurvey />
           </div>
         </div>
       </div>

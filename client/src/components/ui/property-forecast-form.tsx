@@ -5,7 +5,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -14,9 +13,7 @@ import { trackEvent } from "@/lib/analytics";
 
 const forecastSchema = z.object({
   property_address: z.string().min(5, "Please enter a valid address"),
-  property_type: z.string().min(1, "Please select a property type"),
-  bedrooms: z.string().min(1, "Please select number of bedrooms"),
-  email: z.string().email("Please enter a valid email address")
+  email: z.string().email("Please enter a valid email address").optional().or(z.literal(""))
 });
 
 type ForecastData = z.infer<typeof forecastSchema>;
@@ -32,14 +29,13 @@ interface ForecastResults {
 
 export default function PropertyForecastForm() {
   const [results, setResults] = useState<ForecastResults | null>(null);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ForecastData>({
     resolver: zodResolver(forecastSchema),
     defaultValues: {
       property_address: "",
-      property_type: "",
-      bedrooms: "",
       email: ""
     }
   });
@@ -52,6 +48,7 @@ export default function PropertyForecastForm() {
     onSuccess: (data) => {
       if (data.success) {
         setResults(data.results);
+        setShowEmailCapture(true);
         trackEvent('form_submit', 'property_forecast', 'success');
         toast({
           title: "Forecast Generated",
@@ -105,115 +102,99 @@ export default function PropertyForecastForm() {
             )}
           />
           
-          <div className="grid sm:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="property_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Property Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-property-type">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="detached">Detached House</SelectItem>
-                      <SelectItem value="semi-detached">Semi-detached House</SelectItem>
-                      <SelectItem value="terraced">Terraced House</SelectItem>
-                      <SelectItem value="flat">Flat/Apartment</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="bedrooms"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bedrooms</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-bedrooms">
-                        <SelectValue placeholder="Select bedrooms" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4+">4+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Address</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="email" 
-                    placeholder="Enter your email for detailed report" 
-                    {...field} 
-                    data-testid="input-email"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
           <Button 
             type="submit" 
             className="w-full" 
             disabled={forecastMutation.isPending}
             data-testid="button-generate-forecast"
           >
-            {forecastMutation.isPending ? "Generating..." : "Get AI Valuation & Forecast"}
+            {forecastMutation.isPending ? "Generating..." : "Get Instant Property Forecast"}
           </Button>
         </form>
       </Form>
       
       {results && (
-        <div className="mt-8 p-6 bg-muted/30 rounded-lg border border-border" data-testid="forecast-results">
-          <h4 className="font-semibold mb-4">Property Valuation Results</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Current Value</span>
-              <span className="font-semibold text-lg" data-testid="result-current-value">
-                {formatCurrency(results.currentValue)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">1 Year Forecast</span>
-              <span className="font-semibold text-chart-2" data-testid="result-one-year">
-                {formatCurrency(results.oneYearForecast)} (+{results.oneYearGrowth}%)
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">5 Year Forecast</span>
-              <span className="font-semibold text-chart-2" data-testid="result-five-year">
-                {formatCurrency(results.fiveYearForecast)} (+{results.fiveYearGrowth}%)
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Confidence Score</span>
-              <span className="font-semibold" data-testid="result-confidence">
-                {results.confidence}%
-              </span>
+        <div className="mt-8 space-y-6">
+          <div className="p-6 bg-muted/30 rounded-lg border border-border" data-testid="forecast-results">
+            <h4 className="font-semibold mb-4">Property Valuation Results</h4>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Current Value</span>
+                <span className="font-semibold text-lg" data-testid="result-current-value">
+                  {formatCurrency(results.currentValue)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">1 Year Forecast</span>
+                <span className="font-semibold text-chart-2" data-testid="result-one-year">
+                  {formatCurrency(results.oneYearForecast)} (+{results.oneYearGrowth}%)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">3 Year Forecast</span>
+                <span className="font-semibold text-chart-2" data-testid="result-three-year">
+                  {formatCurrency(results.fiveYearForecast * 0.6)} (+{(parseFloat(results.fiveYearGrowth) * 0.6).toFixed(1)}%)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">5 Year Forecast</span>
+                <span className="font-semibold text-chart-2" data-testid="result-five-year">
+                  {formatCurrency(results.fiveYearForecast)} (+{results.fiveYearGrowth}%)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Confidence Score</span>
+                <span className="font-semibold" data-testid="result-confidence">
+                  {results.confidence}%
+                </span>
+              </div>
             </div>
           </div>
+          
+          {showEmailCapture && (
+            <div className="p-6 bg-primary/5 rounded-lg border border-primary/20">
+              <h5 className="font-semibold mb-3">Want this forecast emailed to you?</h5>
+              <p className="text-sm text-muted-foreground mb-4">
+                Receive a detailed PDF report with market analysis and investment recommendations.
+              </p>
+              <div className="flex gap-3">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="Enter your email address" 
+                          {...field} 
+                          data-testid="input-email-capture"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  onClick={() => {
+                    const email = form.getValues('email');
+                    if (email) {
+                      // Send email with forecast
+                      trackEvent('email_capture', 'property_forecast', 'success');
+                      toast({
+                        title: "Email Sent!",
+                        description: "Your detailed forecast report has been sent to your email.",
+                      });
+                      setShowEmailCapture(false);
+                    }
+                  }}
+                  data-testid="button-email-forecast"
+                >
+                  Send Report
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

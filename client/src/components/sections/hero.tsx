@@ -23,9 +23,24 @@ export default function Hero() {
                 Transform Real Estate with
                 <span className="text-primary"> AI-Powered Intelligence</span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Reduce costly errors, accelerate decisions, and unlock market opportunities with hyper-local property insights powered by machine learning and big data.
+              <p className="text-xl text-muted-foreground leading-relaxed mb-4">
+                A property is a place to live but also an investment for many people. Often it is their biggest investment. Is my property a good or a bad investment? Is it a better investment than putting money in a savings account (or into stocks, or into bonds)?
               </p>
+              <p className="text-lg text-muted-foreground">
+                We want to help property owners (and those aspiring to own) answer these questions. We do this using 'big' data, modern statistical models, and lots of computation.
+              </p>
+              <div className="pt-4">
+                <a 
+                  href="#data-methodology" 
+                  className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors"
+                  onClick={() => {
+                    trackEvent('click', 'hero', 'see_how_we_do_this');
+                    document.getElementById('data-methodology')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  See how we do this →
+                </a>
+              </div>
             </div>
             
             <div className="grid sm:grid-cols-2 gap-4">
