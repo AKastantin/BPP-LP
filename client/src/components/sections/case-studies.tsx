@@ -1,4 +1,4 @@
-import { Building2, TrendingUp, Target, Star, Shield, BookOpen, Mic } from "lucide-react";
+import { Building2, TrendingUp, Target } from "lucide-react";
 
 const caseStudies = [
   {
@@ -33,12 +33,6 @@ const caseStudies = [
   }
 ];
 
-const recognitions = [
-  { title: "PropTech Awards", subtitle: "Innovation Winner 2024", icon: Star },
-  { title: "FCA Certified", subtitle: "Regulatory Compliance", icon: Shield },
-  { title: "University Partners", subtitle: "Oxford, Cambridge, LSE", icon: BookOpen },
-  { title: "Media Coverage", subtitle: "Financial Times, BBC", icon: Mic }
-];
 
 export default function CaseStudies() {
   return (
@@ -89,28 +83,6 @@ export default function CaseStudies() {
               </div>
             );
           })}
-        </div>
-        
-        <div className="bg-card rounded-2xl p-8 border border-border">
-          <h3 className="text-2xl font-bold text-center mb-8">Industry Recognition</h3>
-          <div className="grid md:grid-cols-4 gap-8 items-center">
-            {recognitions.map((recognition, index) => {
-              const IconComponent = recognition.icon;
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-chart-3/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <IconComponent className="w-8 h-8 text-chart-3" />
-                  </div>
-                  <h4 className="font-semibold mb-1" data-testid={`recognition-title-${index}`}>
-                    {recognition.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground" data-testid={`recognition-subtitle-${index}`}>
-                    {recognition.subtitle}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
     </section>

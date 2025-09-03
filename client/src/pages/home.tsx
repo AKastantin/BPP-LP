@@ -6,7 +6,6 @@ import SolutionOverview from "@/components/sections/solution-overview";
 import ProductShowcase from "@/components/sections/product-showcase";
 import InteractiveTools from "@/components/sections/interactive-tools";
 import CaseStudies from "@/components/sections/case-studies";
-import Pricing from "@/components/sections/pricing";
 import Contact from "@/components/sections/contact";
 import Footer from "@/components/layout/footer";
 
@@ -22,7 +21,6 @@ export default function Home() {
         <ProductShowcase />
         <InteractiveTools />
         <CaseStudies />
-        <Pricing />
         <Contact />
       </main>
       <Footer />

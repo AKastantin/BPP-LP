@@ -43,13 +43,6 @@ export default function Header() {
               Try Tools
             </button>
             <button 
-              onClick={() => scrollToSection('pricing')}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="nav-pricing"
-            >
-              Pricing
-            </button>
-            <button 
               onClick={() => scrollToSection('contact')}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               data-testid="nav-contact"
