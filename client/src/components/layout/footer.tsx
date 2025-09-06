@@ -88,13 +88,8 @@ export default function Footer() {
         
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0" data-testid="footer-copyright">
-            © 2024 Big Picture Property. All rights reserved.
+            © 2025 Big Picture Property. All rights reserved.
           </p>
-          <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <span data-testid="footer-compliance-fca">FCA Regulated</span>
-            <span data-testid="footer-compliance-gdpr">GDPR Compliant</span>
-            <span data-testid="footer-compliance-iso">ISO 27001 Certified</span>
-          </div>
         </div>
       </div>
     </footer>

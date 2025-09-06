@@ -2,15 +2,6 @@ import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics";
 
 export default function Header() {
-  const handleSignIn = () => {
-    trackEvent('click', 'navigation', 'sign_in');
-  };
-
-  const handleGetDemo = () => {
-    trackEvent('click', 'navigation', 'get_demo');
-    // Scroll to contact section
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
@@ -52,22 +43,6 @@ export default function Header() {
           </nav>
         </div>
         
-        <div className="flex items-center space-x-3">
-          <Button 
-            variant="ghost" 
-            className="hidden sm:inline-flex"
-            onClick={handleSignIn}
-            data-testid="button-sign-in"
-          >
-            Sign In
-          </Button>
-          <Button 
-            onClick={handleGetDemo}
-            data-testid="button-get-demo"
-          >
-            Get Demo
-          </Button>
-        </div>
       </div>
     </header>
   );

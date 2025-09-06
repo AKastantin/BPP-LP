@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Play, BarChart3 } from "lucide-react";
+import { MessageCircle, BarChart3 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export default function Hero() {
@@ -8,8 +8,8 @@ export default function Hero() {
     document.getElementById('interactive-tools')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleWatchDemo = () => {
-    trackEvent('click', 'hero', 'watch_demo');
+  const handleGetInTouch = () => {
+    trackEvent('click', 'hero', 'get_in_touch');
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -56,11 +56,11 @@ export default function Hero() {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={handleWatchDemo}
-                data-testid="button-watch-demo"
+                onClick={handleGetInTouch}
+                data-testid="button-get-in-touch"
               >
-                <Play className="w-5 h-5 mr-2" />
-                Watch Demo
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Get in Touch
               </Button>
             </div>
             

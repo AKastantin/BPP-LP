@@ -36,11 +36,6 @@ const pillars = [
   }
 ];
 
-const comparisons = [
-  { metric: "Valuation Accuracy", traditional: 65, ai: 95, traditionalLabel: "65%", aiLabel: "95%" },
-  { metric: "Processing Time", traditional: 20, ai: 95, traditionalLabel: "7-14 days", aiLabel: "Real-time" },
-  { metric: "Data Sources", traditional: 30, ai: 100, traditionalLabel: "5-10", aiLabel: "50+" }
-];
 
 export default function SolutionOverview() {
   return (
@@ -83,55 +78,6 @@ export default function SolutionOverview() {
               </div>
             );
           })}
-        </div>
-        
-        <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
-          <h3 className="text-2xl font-bold mb-8 text-center">Traditional vs. AI-Powered Approach</h3>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-lg font-semibold mb-4 text-muted-foreground">Traditional Methods</h4>
-              <div className="space-y-4">
-                {comparisons.map((comparison, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm">{comparison.metric}</span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-muted rounded-full h-2 mr-3">
-                        <div 
-                          className="bg-destructive h-2 rounded-full" 
-                          style={{ width: `${comparison.traditional}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium" data-testid={`traditional-${index}`}>
-                        {comparison.traditionalLabel}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-semibold mb-4 text-primary">AI-Powered Approach</h4>
-              <div className="space-y-4">
-                {comparisons.map((comparison, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm">{comparison.metric}</span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-muted rounded-full h-2 mr-3">
-                        <div 
-                          className="bg-primary h-2 rounded-full" 
-                          style={{ width: `${comparison.ai}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium" data-testid={`ai-${index}`}>
-                        {comparison.aiLabel}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
