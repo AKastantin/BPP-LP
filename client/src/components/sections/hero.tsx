@@ -66,16 +66,16 @@ export default function Hero() {
             
             <div className="flex items-center space-x-8 pt-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary" data-testid="stat-properties">500K+</div>
-                <div className="text-sm text-muted-foreground">Properties Analyzed</div>
+                <div className="text-2xl font-bold text-primary" data-testid="stat-transactions">30M+</div>
+                <div className="text-sm text-muted-foreground">Transactions Since 1995</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary" data-testid="stat-accuracy">95%</div>
-                <div className="text-sm text-muted-foreground">Prediction Accuracy</div>
+                <div className="text-2xl font-bold text-primary" data-testid="stat-neighborhoods">34K+</div>
+                <div className="text-sm text-muted-foreground">Neighborhoods</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary" data-testid="stat-value">£50M+</div>
-                <div className="text-sm text-muted-foreground">Transaction Value</div>
+                <div className="text-2xl font-bold text-primary" data-testid="stat-accuracy">90%</div>
+                <div className="text-sm text-muted-foreground">Accuracy</div>
               </div>
             </div>
           </div>
