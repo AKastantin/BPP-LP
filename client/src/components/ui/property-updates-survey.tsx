@@ -35,6 +35,7 @@ const updateOptions = [
 export default function PropertyUpdatesSurvey() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [otherText, setOtherText] = useState("");
+  const [otherSelected, setOtherSelected] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -92,10 +93,23 @@ export default function PropertyUpdatesSurvey() {
     trackEvent('checkbox_toggle', 'property_updates', `${optionId}_${checked}`);
   };
 
+  const handleOtherChange = (checked: boolean) => {
+    setOtherSelected(checked);
+    if (checked) {
+      setShowEmailForm(true);
+    } else {
+      setOtherText("");
+      if (selectedOptions.length === 0) {
+        setShowEmailForm(false);
+      }
+    }
+    trackEvent('checkbox_toggle', 'property_updates', `other_${checked}`);
+  };
+
   const handleSubmit = () => {
     surveyMutation.mutate({
       selectedOptions,
-      otherText: otherText || undefined,
+      otherText: (otherSelected && otherText) || undefined,
       firstName: firstName || undefined,
       lastName: lastName || undefined,
       email: email || undefined
@@ -131,12 +145,14 @@ export default function PropertyUpdatesSurvey() {
         <div className="space-y-4">
           {updateOptions.map((option) => (
             <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/30 transition-colors">
-              <Checkbox
-                id={option.id}
-                checked={selectedOptions.includes(option.id)}
-                onCheckedChange={(checked) => handleOptionChange(option.id, checked as boolean)}
-                data-testid={`checkbox-${option.id}`}
-              />
+              <div className="mt-0.5">
+                <Checkbox
+                  id={option.id}
+                  checked={selectedOptions.includes(option.id)}
+                  onCheckedChange={(checked) => handleOptionChange(option.id, checked as boolean)}
+                  data-testid={`checkbox-${option.id}`}
+                />
+              </div>
               <div className="space-y-1 flex-1">
                 <Label htmlFor={option.id} className="cursor-pointer font-medium leading-tight">
                   {option.label}
@@ -148,28 +164,28 @@ export default function PropertyUpdatesSurvey() {
             </div>
           ))}
           
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+            <div className="mt-0.5">
               <Checkbox
                 id="other"
-                checked={otherText.length > 0}
-                onCheckedChange={(checked) => {
-                  if (!checked) setOtherText("");
-                }}
+                checked={otherSelected}
+                onCheckedChange={handleOtherChange}
                 data-testid="checkbox-other"
               />
-              <Label htmlFor="other" className="cursor-pointer font-medium">
+            </div>
+            <div className="space-y-3 flex-1">
+              <Label htmlFor="other" className="cursor-pointer font-medium leading-tight">
                 Something else
               </Label>
+              <Textarea
+                placeholder="Tell us what other property information you'd like to receive..."
+                value={otherText}
+                onChange={(e) => setOtherText(e.target.value)}
+                data-testid="textarea-other"
+                className="w-full"
+                disabled={!otherSelected}
+              />
             </div>
-            <Textarea
-              placeholder="Tell us what other property information you'd like to receive..."
-              value={otherText}
-              onChange={(e) => setOtherText(e.target.value)}
-              disabled={otherText.length === 0 && !document.getElementById('other')?.getAttribute('data-state')?.includes('checked')}
-              data-testid="textarea-other"
-              className="ml-6"
-            />
           </div>
         </div>
       </div>
@@ -178,7 +194,7 @@ export default function PropertyUpdatesSurvey() {
         <div className="p-6 bg-primary/5 rounded-lg border border-primary/20 space-y-4">
           <h4 className="font-semibold">Contact Information</h4>
           <p className="text-sm text-muted-foreground">
-            We only take your email if you want to receive information.
+            We will only send you relevant property information based on your preferences. No spam, ever.
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -218,7 +234,7 @@ export default function PropertyUpdatesSurvey() {
 
       <Button 
         onClick={handleSubmit}
-        disabled={surveyMutation.isPending || (selectedOptions.length === 0 && !otherText)}
+        disabled={surveyMutation.isPending || (selectedOptions.length === 0 && !otherSelected)}
         className="w-full"
         data-testid="button-save-preferences"
       >
