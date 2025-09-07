@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLeadSchema, insertPropertyForecastSchema, insertSurveyResponseSchema } from "@shared/schema";
+import { telegramService } from "./telegram";
+import { insertLeadSchema, insertPropertyForecastSchema, insertSurveyResponseSchema, insertEmailRequestSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -10,6 +11,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = insertLeadSchema.parse(req.body);
       const lead = await storage.createLead(data);
+      
+      // Send Telegram notification
+      await telegramService.sendMessage(
+        telegramService.formatContactFormMessage({
+          name: data.name || undefined,
+          email: data.email,
+          phone: data.phone || undefined,
+          company: data.company || undefined,
+          audience_type: data.audience_type,
+          message: data.metadata ? JSON.stringify(data.metadata) : undefined
+        })
+      );
+      
       res.json({ success: true, lead });
     } catch (error) {
       res.status(400).json({ 
@@ -49,17 +63,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fiveYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.4 + 0.15)));
       const confidence = Math.floor(Math.random() * 10 + 90);
 
+      const results = {
+        currentValue,
+        oneYearForecast,
+        fiveYearForecast,
+        confidence,
+        oneYearGrowth: ((oneYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1)
+      };
+
+      // Send Telegram notification
+      await telegramService.sendMessage(
+        telegramService.formatPropertyUpdateMessage({
+          email: forecastData.email,
+          property_address: forecastData.property_address,
+          property_type: forecastData.property_type,
+          bedrooms: forecastData.bedrooms || undefined
+        })
+      );
+
       res.json({ 
         success: true, 
         forecast,
-        results: {
-          currentValue,
-          oneYearForecast,
-          fiveYearForecast,
-          confidence,
-          oneYearGrowth: ((oneYearForecast - currentValue) / currentValue * 100).toFixed(1),
-          fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1)
-        }
+        results
       });
     } catch (error) {
       res.status(400).json({ 
@@ -157,6 +183,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({ success: true, lead });
+    } catch (error) {
+      res.status(400).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Invalid data" 
+      });
+    }
+  });
+
+  // Address autocomplete endpoint
+  app.get("/api/addresses", async (req, res) => {
+    try {
+      const searchTerm = req.query.q as string;
+      const addresses = await storage.getPropertyAddresses(searchTerm);
+      
+      res.json({ 
+        success: true, 
+        addresses: addresses.map(addr => ({
+          id: addr.id,
+          address: addr.address,
+          postcode: addr.postcode,
+          city: addr.city,
+          county: addr.county
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Internal server error" 
+      });
+    }
+  });
+
+  // Property search endpoint
+  app.post("/api/property-search", async (req, res) => {
+    try {
+      const searchData = z.object({
+        address: z.string().min(1),
+        property_type: z.string().optional(),
+        bedrooms: z.string().optional()
+      }).parse(req.body);
+
+      // Simulate property search results with dummy data
+      const currentValue = Math.floor(Math.random() * 500000) + 200000;
+      const oneYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.1 + 0.02)));
+      const fiveYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.4 + 0.15)));
+      const confidence = Math.floor(Math.random() * 10 + 90);
+
+      const results = {
+        currentValue,
+        oneYearForecast,
+        fiveYearForecast,
+        confidence,
+        oneYearGrowth: ((oneYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        propertyType: searchData.property_type || "Unknown",
+        bedrooms: searchData.bedrooms || "Unknown",
+        address: searchData.address
+      };
+
+      res.json({ 
+        success: true, 
+        results
+      });
+    } catch (error) {
+      res.status(400).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Invalid data" 
+      });
+    }
+  });
+
+  // Email results request endpoint
+  app.post("/api/email-results", async (req, res) => {
+    try {
+      const emailData = insertEmailRequestSchema.parse(req.body);
+      const emailRequest = await storage.createEmailRequest(emailData);
+      
+      // Send Telegram notification
+      await telegramService.sendMessage(
+        telegramService.formatEmailRequestMessage({
+          email: emailData.email,
+          property_address: emailData.property_address,
+          results: emailData.property_results
+        })
+      );
+      
+      res.json({ success: true, emailRequest });
     } catch (error) {
       res.status(400).json({ 
         success: false, 

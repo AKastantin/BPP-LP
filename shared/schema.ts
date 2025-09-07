@@ -39,6 +39,24 @@ export const survey_responses = pgTable("survey_responses", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
+export const property_addresses = pgTable("property_addresses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  address: text("address").notNull(),
+  postcode: text("postcode"),
+  city: text("city"),
+  county: text("county"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const email_requests = pgTable("email_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  property_address: text("property_address").notNull(),
+  property_results: json("property_results").notNull(), // the property valuation results
+  sent: boolean("sent").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -66,6 +84,19 @@ export const insertSurveyResponseSchema = createInsertSchema(survey_responses).p
   completed: true,
 });
 
+export const insertPropertyAddressSchema = createInsertSchema(property_addresses).pick({
+  address: true,
+  postcode: true,
+  city: true,
+  county: true,
+});
+
+export const insertEmailRequestSchema = createInsertSchema(email_requests).pick({
+  email: true,
+  property_address: true,
+  property_results: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
@@ -74,3 +105,7 @@ export type InsertPropertyForecast = z.infer<typeof insertPropertyForecastSchema
 export type PropertyForecast = typeof property_forecasts.$inferSelect;
 export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 export type SurveyResponse = typeof survey_responses.$inferSelect;
+export type InsertPropertyAddress = z.infer<typeof insertPropertyAddressSchema>;
+export type PropertyAddress = typeof property_addresses.$inferSelect;
+export type InsertEmailRequest = z.infer<typeof insertEmailRequestSchema>;
+export type EmailRequest = typeof email_requests.$inferSelect;
