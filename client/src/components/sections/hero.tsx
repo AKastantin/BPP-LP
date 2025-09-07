@@ -82,8 +82,8 @@ export default function Hero() {
           
           <div className="relative">
             <img 
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-              alt="Modern city skyline representing urban property analytics" 
+              src="/assets/rural-house-hero.png" 
+              alt="Rural house in Redditch, UK representing property investment opportunities" 
               className="rounded-2xl shadow-2xl w-full h-auto"
               data-testid="hero-image"
             />

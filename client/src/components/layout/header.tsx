@@ -12,9 +12,11 @@ export default function Header() {
       <div className="container mx-auto px-4 lg:px-8 flex h-16 items-center justify-between">
         <div className="flex items-center space-x-8">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">BP</span>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Big Picture Property Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-semibold text-lg">Big Picture Property</span>
           </div>
           

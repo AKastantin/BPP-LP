@@ -126,7 +126,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-semibold">Email Us</h4>
-                  <p className="text-muted-foreground">info@bigpictureproperty.com</p>
+                  <p className="text-muted-foreground">property.market.stories@gmail.com</p>
                 </div>
               </div>
               
@@ -136,7 +136,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-semibold">Call Us</h4>
-                  <p className="text-muted-foreground">+44 (0) 20 7946 0958</p>
+                  <p className="text-muted-foreground">+33 6 80 65 50 89</p>
                 </div>
               </div>
               

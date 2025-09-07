@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Database, BarChart3, Brain, FileText, PieChart, TrendingUp } from "lucide-react";
+import { Database, Brain, FileText, PieChart, TrendingUp } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export default function DataMethodology() {
@@ -91,23 +91,6 @@ export default function DataMethodology() {
           </div>
         </div>
 
-        <div className="mt-16 text-center">
-          <div className="bg-primary/10 rounded-2xl p-8 max-w-4xl mx-auto">
-            <BarChart3 className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h4 className="text-2xl font-bold mb-4">Want to know more about how we do this?</h4>
-            <p className="text-lg text-muted-foreground mb-6">
-              Get in touch to learn more about our data methodology and statistical modeling approach.
-            </p>
-            <Button 
-              onClick={handleContactClick}
-              variant="outline"
-              size="lg"
-              data-testid="button-contact-methodology"
-            >
-              Get In Touch
-            </Button>
-          </div>
-        </div>
       </div>
     </section>
   );
