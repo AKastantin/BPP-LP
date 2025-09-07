@@ -74,8 +74,6 @@ export const insertLeadSchema = createInsertSchema(leads).pick({
 
 export const insertPropertyForecastSchema = createInsertSchema(property_forecasts).pick({
   property_address: true,
-  property_type: true,
-  bedrooms: true,
   email: true,
 });
 

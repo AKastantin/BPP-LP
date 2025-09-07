@@ -57,19 +57,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lead_id: lead.id
       });
 
-      // Simulate AI valuation results
-      const currentValue = Math.floor(Math.random() * 500000) + 200000;
-      const oneYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.1 + 0.02)));
-      const fiveYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.4 + 0.15)));
-      const confidence = Math.floor(Math.random() * 10 + 90);
+      // Get real property data from CSV
+      const propertyData = await storage.getPropertyDataByAddress(forecastData.property_address);
+      
+      if (!propertyData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Property not found in our database" 
+        });
+      }
+
+      const currentValue = parseInt(propertyData.val_2025q2);
+      const oneYearForecast = parseInt(propertyData.val_2026q2);
+      const threeYearForecast = parseInt(propertyData.val_2028q2);
+      const fiveYearForecast = parseInt(propertyData.val_2030q2);
 
       const results = {
         currentValue,
         oneYearForecast,
+        threeYearForecast,
         fiveYearForecast,
-        confidence,
         oneYearGrowth: ((oneYearForecast - currentValue) / currentValue * 100).toFixed(1),
-        fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1)
+        threeYearGrowth: ((threeYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        propertyType: propertyData.ptype,
+        address: propertyData.uniqueadd
       };
 
       // Send Telegram notification
@@ -77,8 +89,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         telegramService.formatPropertyUpdateMessage({
           email: forecastData.email,
           property_address: forecastData.property_address,
-          property_type: forecastData.property_type,
-          bedrooms: forecastData.bedrooms || undefined
+          property_type: propertyData.ptype,
+          bedrooms: undefined
         })
       );
 
@@ -219,33 +231,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/property-search", async (req, res) => {
     try {
       const searchData = z.object({
-        address: z.string().min(1),
-        property_type: z.string().optional(),
-        bedrooms: z.string().optional()
+        address: z.string().min(1)
       }).parse(req.body);
 
-      // Simulate property search results with dummy data
-      const currentValue = Math.floor(Math.random() * 500000) + 200000;
-      const oneYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.1 + 0.02)));
-      const fiveYearForecast = Math.floor(currentValue * (1 + (Math.random() * 0.4 + 0.15)));
-      const confidence = Math.floor(Math.random() * 10 + 90);
+      // Get real property data from CSV
+      const propertyData = await storage.getPropertyDataByAddress(searchData.address);
+      
+      if (!propertyData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Property not found in our database" 
+        });
+      }
+
+      const currentValue = parseInt(propertyData.val_2025q2);
+      const oneYearForecast = parseInt(propertyData.val_2026q2);
+      const threeYearForecast = parseInt(propertyData.val_2028q2);
+      const fiveYearForecast = parseInt(propertyData.val_2030q2);
 
       const results = {
         currentValue,
         oneYearForecast,
+        threeYearForecast,
         fiveYearForecast,
-        confidence,
         oneYearGrowth: ((oneYearForecast - currentValue) / currentValue * 100).toFixed(1),
+        threeYearGrowth: ((threeYearForecast - currentValue) / currentValue * 100).toFixed(1),
         fiveYearGrowth: ((fiveYearForecast - currentValue) / currentValue * 100).toFixed(1),
-        propertyType: searchData.property_type || "Unknown",
-        bedrooms: searchData.bedrooms || "Unknown",
-        address: searchData.address
+        propertyType: propertyData.ptype,
+        address: propertyData.uniqueadd
       };
 
       res.json({ 
         success: true, 
         results
       });
+    } catch (error) {
+      res.status(400).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Invalid data" 
+      });
+    }
+  });
+
+  // Property updates survey endpoint
+  app.post("/api/property-updates-survey", async (req, res) => {
+    try {
+      const surveyData = z.object({
+        selectedOptions: z.array(z.string()),
+        additionalInfo: z.string().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        email: z.string().email().optional()
+      }).parse(req.body);
+      
+      let lead_id: string | undefined;
+      
+      if (surveyData.email) {
+        let lead = await storage.getLeadByEmail(surveyData.email);
+        if (!lead) {
+          lead = await storage.createLead({
+            email: surveyData.email,
+            name: surveyData.firstName && surveyData.lastName 
+              ? `${surveyData.firstName} ${surveyData.lastName}` 
+              : surveyData.firstName || surveyData.lastName || null,
+            audience_type: "property_owners",
+            lead_source: "property_updates_survey",
+            phone: null,
+            company: null,
+            metadata: {
+              selectedOptions: surveyData.selectedOptions,
+              additionalInfo: surveyData.additionalInfo,
+              firstName: surveyData.firstName,
+              lastName: surveyData.lastName
+            }
+          });
+        }
+        lead_id = lead.id;
+      }
+
+      const response = await storage.createSurveyResponse({
+        responses: {
+          selectedOptions: surveyData.selectedOptions,
+          additionalInfo: surveyData.additionalInfo,
+          firstName: surveyData.firstName,
+          lastName: surveyData.lastName,
+          email: surveyData.email
+        },
+        completed: true,
+        lead_id
+      });
+
+      // Send Telegram notification
+      await telegramService.sendMessage(
+        telegramService.formatPropertyUpdatesSurveyMessage({
+          email: surveyData.email,
+          firstName: surveyData.firstName,
+          lastName: surveyData.lastName,
+          selectedOptions: surveyData.selectedOptions,
+          additionalInfo: surveyData.additionalInfo
+        })
+      );
+
+      res.json({ success: true, response });
     } catch (error) {
       res.status(400).json({ 
         success: false, 

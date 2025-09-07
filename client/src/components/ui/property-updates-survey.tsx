@@ -34,8 +34,8 @@ const updateOptions = [
 
 export default function PropertyUpdatesSurvey() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [otherText, setOtherText] = useState("");
   const [otherSelected, setOtherSelected] = useState(false);
+  const [additionalInfo, setAdditionalInfo] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -46,7 +46,7 @@ export default function PropertyUpdatesSurvey() {
   const surveyMutation = useMutation({
     mutationFn: async (data: {
       selectedOptions: string[];
-      otherText?: string;
+      additionalInfo?: string;
       firstName?: string;
       lastName?: string;
       email?: string;
@@ -97,8 +97,13 @@ export default function PropertyUpdatesSurvey() {
     setOtherSelected(checked);
     if (checked) {
       setShowEmailForm(true);
+      // Add "other" to selectedOptions so it appears in the main list
+      if (!selectedOptions.includes("other")) {
+        setSelectedOptions([...selectedOptions, "other"]);
+      }
     } else {
-      setOtherText("");
+      // Remove "other" from selectedOptions
+      setSelectedOptions(selectedOptions.filter(id => id !== "other"));
       if (selectedOptions.length === 0) {
         setShowEmailForm(false);
       }
@@ -107,9 +112,28 @@ export default function PropertyUpdatesSurvey() {
   };
 
   const handleSubmit = () => {
+    // Validate required fields
+    if (!firstName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your first name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     surveyMutation.mutate({
       selectedOptions,
-      otherText: (otherSelected && otherText) || undefined,
+      additionalInfo: additionalInfo || undefined,
       firstName: firstName || undefined,
       lastName: lastName || undefined,
       email: email || undefined
@@ -173,18 +197,13 @@ export default function PropertyUpdatesSurvey() {
                 data-testid="checkbox-other"
               />
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-1 flex-1">
               <Label htmlFor="other" className="cursor-pointer font-medium leading-tight">
                 Something else
               </Label>
-              <Textarea
-                placeholder="Tell us what other property information you'd like to receive..."
-                value={otherText}
-                onChange={(e) => setOtherText(e.target.value)}
-                data-testid="textarea-other"
-                className="w-full"
-                disabled={!otherSelected}
-              />
+              <p className="text-sm text-muted-foreground">
+                Other property information you'd like to receive
+              </p>
             </div>
           </div>
         </div>
@@ -198,13 +217,14 @@ export default function PropertyUpdatesSurvey() {
           </p>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
               <Input
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Enter your first name"
                 data-testid="input-first-name"
+                required
               />
             </div>
             <div>
@@ -219,7 +239,7 @@ export default function PropertyUpdatesSurvey() {
             </div>
           </div>
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
             <Input
               id="email"
               type="email"
@@ -227,6 +247,18 @@ export default function PropertyUpdatesSurvey() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address"
               data-testid="input-email-updates"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="additionalInfo">Additional Information (Optional)</Label>
+            <Textarea
+              id="additionalInfo"
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              placeholder="Please explain more what you want or what exactly interests you..."
+              data-testid="textarea-additional-info"
+              className="min-h-[80px]"
             />
           </div>
         </div>

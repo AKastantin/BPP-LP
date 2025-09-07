@@ -89,6 +89,47 @@ export class TelegramService {
     `.trim();
   }
 
+  formatPropertyUpdatesSurveyMessage(data: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    selectedOptions: string[];
+    additionalInfo?: string;
+  }): string {
+    const name = data.firstName && data.lastName 
+      ? `${data.firstName} ${data.lastName}`
+      : data.firstName || data.lastName || 'Not provided';
+    
+    // Map option IDs to user-friendly labels
+    const optionLabels: Record<string, string> = {
+      'market_activity': 'Market activity updates for my postal district',
+      'current_value': 'Estimates of the current value of my property',
+      'future_value': 'Estimates of the future value of my property in 1, 3, and 5 years',
+      'comparison': 'Comparison between property appreciation and other investments',
+      'other': 'Something else'
+    };
+    
+    const optionsText = data.selectedOptions.length > 0 
+      ? data.selectedOptions.map(option => `• ${optionLabels[option] || option}`).join('\n')
+      : 'No options selected';
+    
+    const additionalInfoSection = data.additionalInfo 
+      ? `\n💬 <b>Additional Information:</b> ${data.additionalInfo}`
+      : '';
+
+    return `
+📋 <b>New Property Updates Survey Submission</b>
+
+👤 <b>Name:</b> ${name}
+📧 <b>Email:</b> ${data.email || 'Not provided'}
+
+✅ <b>Selected Options:</b>
+${optionsText}${additionalInfoSection}
+
+⏰ <b>Time:</b> ${new Date().toLocaleString()}
+    `.trim();
+  }
+
   formatEmailRequestMessage(data: {
     email: string;
     property_address: string;
@@ -102,7 +143,6 @@ export class TelegramService {
 💰 <b>Current Value:</b> £${data.results.currentValue?.toLocaleString() || 'N/A'}
 📈 <b>1-Year Forecast:</b> £${data.results.oneYearForecast?.toLocaleString() || 'N/A'}
 📊 <b>5-Year Forecast:</b> £${data.results.fiveYearForecast?.toLocaleString() || 'N/A'}
-🎯 <b>Confidence:</b> ${data.results.confidence || 'N/A'}%
 
 ⏰ <b>Time:</b> ${new Date().toLocaleString()}
     `.trim();

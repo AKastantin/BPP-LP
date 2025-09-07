@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/analytics";
 import PropertyValueChart from "./property-value-chart";
+import AddressAutocomplete from "./address-autocomplete";
 
 const forecastSchema = z.object({
   property_address: z.string().min(5, "Please enter a valid address"),
@@ -22,10 +23,14 @@ type ForecastData = z.infer<typeof forecastSchema>;
 interface ForecastResults {
   currentValue: number;
   oneYearForecast: number;
+  threeYearForecast: number;
   fiveYearForecast: number;
   confidence: number;
   oneYearGrowth: string;
+  threeYearGrowth: string;
   fiveYearGrowth: string;
+  propertyType?: string;
+  address?: string;
 }
 
 export default function PropertyForecastForm() {
@@ -43,19 +48,11 @@ export default function PropertyForecastForm() {
 
   const forecastMutation = useMutation({
     mutationFn: async (data: ForecastData) => {
-      // API does not exist yet, so return mock data for now
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate network delay
-      return {
-        success: true,
-        results: {
-          currentValue: 500000,
-          oneYearForecast: 525000,
-          fiveYearForecast: 600000,
-          confidence: 0.85,
-          oneYearGrowth: "+5%",
-          fiveYearGrowth: "+20%"
-        }
-      };
+      const response = await apiRequest("POST", "/api/property-forecast", {
+        property_address: data.property_address,
+        email: data.email || "anonymous@example.com"
+      });
+      return response.json();
     },
     onSuccess: (data) => {
       if (data.success) {
@@ -92,14 +89,13 @@ export default function PropertyForecastForm() {
     }).format(value);
   };
 
-  const generateChartData = (currentValue: number, oneYearForecast: number, fiveYearForecast: number) => {
+  const generateChartData = (currentValue: number, oneYearForecast: number, threeYearForecast: number, fiveYearForecast: number) => {
     const currentYear = new Date().getFullYear();
-    const threeYearValue = currentValue + (fiveYearForecast - currentValue) * 0.6; // Interpolate for 3 years
     
     return [
       { year: currentYear.toString(), value: currentValue },
       { year: (currentYear + 1).toString(), value: oneYearForecast },
-      { year: (currentYear + 3).toString(), value: threeYearValue },
+      { year: (currentYear + 3).toString(), value: threeYearForecast },
       { year: (currentYear + 5).toString(), value: fiveYearForecast }
     ];
   };
@@ -115,16 +111,17 @@ export default function PropertyForecastForm() {
               <FormItem>
                 <FormLabel>Property Address</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Enter full address or postcode" 
-                    {...field} 
-                    data-testid="input-property-address"
+                  <AddressAutocomplete
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Enter full address or postcode"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           
           <Button 
             type="submit" 
@@ -157,7 +154,7 @@ export default function PropertyForecastForm() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">3 Year Forecast</span>
                 <span className="font-semibold text-chart-2" data-testid="result-three-year">
-                  {formatCurrency(results.fiveYearForecast * 0.6)} (+{(parseFloat(results.fiveYearGrowth) * 0.6).toFixed(1)}%)
+                  {formatCurrency(results.threeYearForecast)} (+{results.threeYearGrowth}%)
                 </span>
               </div>
               <div className="flex justify-between">
@@ -171,7 +168,7 @@ export default function PropertyForecastForm() {
 
           {/* Property Value Forecast Chart */}
           <PropertyValueChart 
-            data={generateChartData(results.currentValue, results.oneYearForecast, results.fiveYearForecast)}
+            data={generateChartData(results.currentValue, results.oneYearForecast, results.threeYearForecast, results.fiveYearForecast)}
             currentValue={results.currentValue}
           />
           
@@ -201,16 +198,34 @@ export default function PropertyForecastForm() {
                     )}
                   />
                   <Button 
-                    onClick={() => {
+                    onClick={async () => {
                       const email = form.getValues('email');
-                      if (email) {
-                        // Send email with forecast
-                        trackEvent('email_capture', 'property_forecast', 'success');
-                        toast({
-                          title: "Email Sent!",
-                          description: "Your detailed forecast report has been sent to your email.",
-                        });
-                        setShowEmailCapture(false);
+                      const address = form.getValues('property_address');
+                      if (email && results) {
+                        try {
+                          const response = await apiRequest("POST", "/api/email-results", {
+                            email,
+                            property_address: address,
+                            property_results: results
+                          });
+                          const data = await response.json();
+                          
+                          if (data.success) {
+                            trackEvent('email_capture', 'property_forecast', 'success');
+                            toast({
+                              title: "Email Request Sent!",
+                              description: "Your detailed forecast report will be sent to your email shortly.",
+                            });
+                            setShowEmailCapture(false);
+                          }
+                        } catch (error) {
+                          trackEvent('email_capture', 'property_forecast', 'error');
+                          toast({
+                            title: "Error",
+                            description: "Failed to send email request. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
                       }
                     }}
                     data-testid="button-email-forecast"

@@ -13,6 +13,19 @@ import {
   type InsertEmailRequest
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
+import csv from "csv-parser";
+
+interface CSVPropertyData {
+  uniqueadd: string;
+  pcdist: string;
+  ptype: string;
+  val_2025q2: string;
+  val_2026q2: string;
+  val_2028q2: string;
+  val_2030q2: string;
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -31,6 +44,7 @@ export interface IStorage {
   
   getPropertyAddresses(searchTerm?: string): Promise<PropertyAddress[]>;
   createPropertyAddress(address: InsertPropertyAddress): Promise<PropertyAddress>;
+  getPropertyDataByAddress(address: string): Promise<CSVPropertyData | undefined>;
   
   createEmailRequest(request: InsertEmailRequest): Promise<EmailRequest>;
   getEmailRequest(id: string): Promise<EmailRequest | undefined>;
@@ -45,6 +59,7 @@ export class MemStorage implements IStorage {
   private survey_responses: Map<string, SurveyResponse>;
   private property_addresses: Map<string, PropertyAddress>;
   private email_requests: Map<string, EmailRequest>;
+  private csvData: Map<string, CSVPropertyData>;
 
   constructor() {
     this.users = new Map();
@@ -53,9 +68,10 @@ export class MemStorage implements IStorage {
     this.survey_responses = new Map();
     this.property_addresses = new Map();
     this.email_requests = new Map();
+    this.csvData = new Map();
     
-    // Initialize with dummy addresses
-    this.initializeDummyAddresses();
+    // Initialize with real CSV data
+    this.initializeCSVData();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -135,19 +151,32 @@ export class MemStorage implements IStorage {
   }
 
   async getPropertyAddresses(searchTerm?: string): Promise<PropertyAddress[]> {
-    const addresses = Array.from(this.property_addresses.values());
+    const csvEntries = Array.from(this.csvData.values());
     
     if (!searchTerm) {
-      return addresses.slice(0, 20); // Return first 20 addresses for autocomplete
+      return csvEntries.slice(0, 20).map(entry => ({
+        id: randomUUID(),
+        address: entry.uniqueadd,
+        postcode: entry.pcdist,
+        city: null,
+        county: null,
+        created_at: new Date()
+      }));
     }
     
-    const filtered = addresses.filter(address => 
-      address.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.postcode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.city?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = csvEntries.filter(entry => 
+      entry.uniqueadd.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.pcdist.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    return filtered.slice(0, 10); // Return max 10 results
+    return filtered.slice(0, 10).map(entry => ({
+      id: randomUUID(),
+      address: entry.uniqueadd,
+      postcode: entry.pcdist,
+      city: null,
+      county: null,
+      created_at: new Date()
+    }));
   }
 
   async createPropertyAddress(address: InsertPropertyAddress): Promise<PropertyAddress> {
@@ -162,6 +191,10 @@ export class MemStorage implements IStorage {
     };
     this.property_addresses.set(id, propertyAddress);
     return propertyAddress;
+  }
+
+  async getPropertyDataByAddress(address: string): Promise<CSVPropertyData | undefined> {
+    return this.csvData.get(address);
   }
 
   async createEmailRequest(request: InsertEmailRequest): Promise<EmailRequest> {
@@ -191,49 +224,28 @@ export class MemStorage implements IStorage {
     }
   }
 
-  private initializeDummyAddresses(): void {
-    const dummyAddresses = [
-      { address: "123 Baker Street, London", postcode: "NW1 6XE", city: "London", county: "Greater London" },
-      { address: "45 Oxford Street, London", postcode: "W1D 2DZ", city: "London", county: "Greater London" },
-      { address: "78 Regent Street, London", postcode: "W1B 5AH", city: "London", county: "Greater London" },
-      { address: "12 Piccadilly, London", postcode: "W1J 0BT", city: "London", county: "Greater London" },
-      { address: "34 Bond Street, London", postcode: "W1S 2SR", city: "London", county: "Greater London" },
-      { address: "56 King's Road, London", postcode: "SW3 4UD", city: "London", county: "Greater London" },
-      { address: "89 Fulham Road, London", postcode: "SW3 6HR", city: "London", county: "Greater London" },
-      { address: "23 Knightsbridge, London", postcode: "SW1X 7LY", city: "London", county: "Greater London" },
-      { address: "67 Sloane Street, London", postcode: "SW1X 9SP", city: "London", county: "Greater London" },
-      { address: "91 Brompton Road, London", postcode: "SW3 1ER", city: "London", county: "Greater London" },
-      { address: "15 Park Lane, London", postcode: "W1K 1QA", city: "London", county: "Greater London" },
-      { address: "42 Grosvenor Square, London", postcode: "W1K 2HP", city: "London", county: "Greater London" },
-      { address: "8 Berkeley Square, London", postcode: "W1J 6DB", city: "London", county: "Greater London" },
-      { address: "29 Mount Street, London", postcode: "W1K 3SB", city: "London", county: "Greater London" },
-      { address: "73 Curzon Street, London", postcode: "W1J 7TF", city: "London", county: "Greater London" },
-      { address: "156 Victoria Street, London", postcode: "SW1E 5LB", city: "London", county: "Greater London" },
-      { address: "88 Buckingham Palace Road, London", postcode: "SW1W 0TQ", city: "London", county: "Greater London" },
-      { address: "201 Westminster Bridge Road, London", postcode: "SE1 7UT", city: "London", county: "Greater London" },
-      { address: "45 Southwark Street, London", postcode: "SE1 1UN", city: "London", county: "Greater London" },
-      { address: "92 Borough High Street, London", postcode: "SE1 1LL", city: "London", county: "Greater London" },
-      { address: "17 Tower Bridge Road, London", postcode: "SE1 2UP", city: "London", county: "Greater London" },
-      { address: "63 Bermondsey Street, London", postcode: "SE1 3XF", city: "London", county: "Greater London" },
-      { address: "28 Tooley Street, London", postcode: "SE1 2QY", city: "London", county: "Greater London" },
-      { address: "84 London Bridge Street, London", postcode: "SE1 9SG", city: "London", county: "Greater London" },
-      { address: "156 Blackfriars Road, London", postcode: "SE1 8EN", city: "London", county: "Greater London" },
-      { address: "45 Waterloo Road, London", postcode: "SE1 8UL", city: "London", county: "Greater London" },
-      { address: "72 Stamford Street, London", postcode: "SE1 9NY", city: "London", county: "Greater London" },
-      { address: "93 The Cut, London", postcode: "SE1 8LN", city: "London", county: "Greater London" },
-      { address: "34 Lower Marsh, London", postcode: "SE1 7RG", city: "London", county: "Greater London" },
-      { address: "67 Waterloo Station, London", postcode: "SE1 8SW", city: "London", county: "Greater London" }
-    ];
+  private initializeCSVData(): void {
+    const csvPath = path.join(process.cwd(), 'value_forecasts_redditch_bromsgrove.csv');
+    
+    if (!fs.existsSync(csvPath)) {
+      console.warn('CSV file not found, using empty data');
+      return;
+    }
 
-    dummyAddresses.forEach(addr => {
-      const id = randomUUID();
-      const propertyAddress: PropertyAddress = {
-        ...addr,
-        id,
-        created_at: new Date()
-      };
-      this.property_addresses.set(id, propertyAddress);
-    });
+    const results: CSVPropertyData[] = [];
+    
+    fs.createReadStream(csvPath)
+      .pipe(csv())
+      .on('data', (data: CSVPropertyData) => results.push(data))
+      .on('end', () => {
+        console.log(`Loaded ${results.length} properties from CSV`);
+        results.forEach(entry => {
+          this.csvData.set(entry.uniqueadd, entry);
+        });
+      })
+      .on('error', (error) => {
+        console.error('Error reading CSV file:', error);
+      });
   }
 }
 

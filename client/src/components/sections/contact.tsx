@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/analytics";
-import { Mail, MessageSquare, Phone } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 
 const contactSchema = z.object({
   firstName: z.string().min(1, "Please enter your first name"),
@@ -37,7 +37,15 @@ export default function Contact() {
 
   const contactMutation = useMutation({
     mutationFn: async (data: ContactData) => {
-      const response = await apiRequest("POST", "/api/contact", data);
+      const response = await apiRequest("POST", "/api/leads", {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: null,
+        company: null,
+        audience_type: "property_owners",
+        lead_source: "contact_form",
+        metadata: { message: data.message }
+      });
       return response.json();
     },
     onSuccess: (data) => {
@@ -130,15 +138,6 @@ export default function Contact() {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold">Call Us</h4>
-                  <p className="text-muted-foreground">+33 6 80 65 50 89</p>
-                </div>
-              </div>
               
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -211,6 +210,7 @@ export default function Contact() {
                     </FormItem>
                   )}
                 />
+
                 
                 <FormField
                   control={form.control}
