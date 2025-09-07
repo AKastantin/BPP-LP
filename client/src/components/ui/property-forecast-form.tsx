@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/analytics";
+import PropertyValueChart from "./property-value-chart";
 
 const forecastSchema = z.object({
   property_address: z.string().min(5, "Please enter a valid address"),
@@ -42,8 +43,19 @@ export default function PropertyForecastForm() {
 
   const forecastMutation = useMutation({
     mutationFn: async (data: ForecastData) => {
-      const response = await apiRequest("POST", "/api/property-forecast", data);
-      return response.json();
+      // API does not exist yet, so return mock data for now
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate network delay
+      return {
+        success: true,
+        results: {
+          currentValue: 500000,
+          oneYearForecast: 525000,
+          fiveYearForecast: 600000,
+          confidence: 0.85,
+          oneYearGrowth: "+5%",
+          fiveYearGrowth: "+20%"
+        }
+      };
     },
     onSuccess: (data) => {
       if (data.success) {
@@ -55,7 +67,7 @@ export default function PropertyForecastForm() {
           description: "Your property valuation and forecast are ready!",
         });
       } else {
-        throw new Error(data.error);
+        throw new Error("Failed to generate forecast");
       }
     },
     onError: (error) => {
@@ -78,6 +90,18 @@ export default function PropertyForecastForm() {
       currency: 'GBP',
       maximumFractionDigits: 0
     }).format(value);
+  };
+
+  const generateChartData = (currentValue: number, oneYearForecast: number, fiveYearForecast: number) => {
+    const currentYear = new Date().getFullYear();
+    const threeYearValue = currentValue + (fiveYearForecast - currentValue) * 0.6; // Interpolate for 3 years
+    
+    return [
+      { year: currentYear.toString(), value: currentValue },
+      { year: (currentYear + 1).toString(), value: oneYearForecast },
+      { year: (currentYear + 3).toString(), value: threeYearValue },
+      { year: (currentYear + 5).toString(), value: fiveYearForecast }
+    ];
   };
 
   return (
@@ -142,14 +166,14 @@ export default function PropertyForecastForm() {
                   {formatCurrency(results.fiveYearForecast)} (+{results.fiveYearGrowth}%)
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Confidence Score</span>
-                <span className="font-semibold" data-testid="result-confidence">
-                  {results.confidence}%
-                </span>
-              </div>
             </div>
           </div>
+
+          {/* Property Value Forecast Chart */}
+          <PropertyValueChart 
+            data={generateChartData(results.currentValue, results.oneYearForecast, results.fiveYearForecast)}
+            currentValue={results.currentValue}
+          />
           
           {showEmailCapture && (
             <div className="p-6 bg-primary/5 rounded-lg border border-primary/20">
@@ -157,42 +181,44 @@ export default function PropertyForecastForm() {
               <p className="text-sm text-muted-foreground mb-4">
                 Receive a detailed PDF report with market analysis and investment recommendations.
               </p>
-              <div className="flex gap-3">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="Enter your email address" 
-                          {...field} 
-                          data-testid="input-email-capture"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button 
-                  onClick={() => {
-                    const email = form.getValues('email');
-                    if (email) {
-                      // Send email with forecast
-                      trackEvent('email_capture', 'property_forecast', 'success');
-                      toast({
-                        title: "Email Sent!",
-                        description: "Your detailed forecast report has been sent to your email.",
-                      });
-                      setShowEmailCapture(false);
-                    }
-                  }}
-                  data-testid="button-email-forecast"
-                >
-                  Send Report
-                </Button>
-              </div>
+              <Form {...form}>
+                <div className="flex gap-3">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input 
+                            type="email" 
+                            placeholder="Enter your email address" 
+                            {...field} 
+                            data-testid="input-email-capture"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button 
+                    onClick={() => {
+                      const email = form.getValues('email');
+                      if (email) {
+                        // Send email with forecast
+                        trackEvent('email_capture', 'property_forecast', 'success');
+                        toast({
+                          title: "Email Sent!",
+                          description: "Your detailed forecast report has been sent to your email.",
+                        });
+                        setShowEmailCapture(false);
+                      }
+                    }}
+                    data-testid="button-email-forecast"
+                  >
+                    Send Report
+                  </Button>
+                </div>
+              </Form>
             </div>
           )}
         </div>
